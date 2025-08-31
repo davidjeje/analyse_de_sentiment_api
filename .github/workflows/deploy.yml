@@ -26,8 +26,9 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry install --no-root  # assure que toutes les dépendances sont présentes
-          pytest tests/test_app.py   # exécute ton fichier de tests
+          poetry add --dev pytest requests fastapi[all]  # installe pytest, requests et FastAPI dans l'environnement
+          poetry install --no-root                      # assure que toutes les dépendances sont présentes
+          pytest tests/test_app.py                       # exécute le fichier de tests
 
       - name: Deploy to Heroku
         if: success()   # Ne déploie que si les tests passent
