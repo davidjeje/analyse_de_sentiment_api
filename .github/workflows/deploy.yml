@@ -22,13 +22,15 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-root
 
       - name: Run tests
-        run: pytest
+        run: |
+          pip install requests pytest
+          pytest tests/test_root_endpoint.py
 
       - name: Deploy to Heroku
-        if: success()
+        if: success()   # Ne déploie que si les tests passent
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
