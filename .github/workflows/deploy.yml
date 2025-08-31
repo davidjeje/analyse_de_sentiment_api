@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
-      - name: Setup Kaggle credentials
+      # - name: Setup Kaggle credentials
       #   run: |
       #     mkdir -p ~/.kaggle
       #     echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
