@@ -26,7 +26,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pip install requests pytest
+          pip install fastapi[all] pytest requests
           pytest tests/test_app.py
 
       - name: Deploy to Heroku
