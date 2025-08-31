@@ -32,12 +32,16 @@ jobs:
 
       # - name: Run tests
       #   run: |
-      #     poetry add --dev pytest requests fastapi[all]  # installe pytest, requests et FastAPI dans l'environnement
-      #     poetry install --no-root                       # assure que toutes les dépendances sont présentes
-      #     poetry run pytest tests/test_app.py            # exécute le fichier de tests dans l'environnement Poetry
+      #     poetry add --dev pytest requests fastapi[all]
+      #     poetry install --no-root
+      #     poetry run pytest tests/test_app.py
+
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
 
       - name: Deploy to Heroku
-        if: success()   # ne déploie que si les tests passent
+        if: success()
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
