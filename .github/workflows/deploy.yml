@@ -27,7 +27,7 @@ jobs:
       - name: Run tests
         run: |
           pip install requests pytest
-          pytest tests/test_root_endpoint.py
+          pytest tests/test_app.py
 
       - name: Deploy to Heroku
         if: success()   # Ne déploie que si les tests passent
