@@ -127,5 +127,5 @@ def verify_data_integrity():
         # Vérifier les valeurs target attendues
         unique_target
     except Exception as e:
-    logger.error(f"Erreur: {e}")
-    # exit(1)  # si tu veux arrêter le script
+        logger.error(f"Erreur: {e}")
+        # exit(1)  # si tu veux arrêter le script
