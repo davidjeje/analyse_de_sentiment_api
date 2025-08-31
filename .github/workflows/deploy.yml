@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
+      - name: Setup Kaggle credentials
+        run: |
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
       - name: Run tests
         run: |
           poetry add --dev pytest requests fastapi[all]  # installe pytest, requests et FastAPI dans l'environnement
