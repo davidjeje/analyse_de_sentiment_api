@@ -24,24 +24,21 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
-      # - name: Setup Kaggle credentials
-      #   run: |
-      #     mkdir -p ~/.kaggle
-      #     echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
-      #     chmod 600 ~/.kaggle/kaggle.json
+      - name: Install dev dependencies for testing
+        run: |
+          poetry add --dev pytest requests fastapi[all]
 
-      # - name: Run tests
-      #   run: |
-      #     poetry add --dev pytest requests fastapi[all]
-      #     poetry install --no-root
-      #     poetry run pytest tests/test_app.py
+      - name: Run tests
+        run: |
+          poetry install --no-root
+          poetry run pytest tests/
 
       - name: Install Heroku CLI
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
 
       - name: Deploy to Heroku
-        if: success()
+        if: success()   # uniquement si les tests passent
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
