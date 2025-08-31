@@ -11,7 +11,7 @@ import logging
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 # Import du script de téléchargement des données Kaggle
-from scripts.download_data import download_sentiment140_data
+from script.download_data import download_sentiment140_data
 
 # --------------------------
 # CONFIGURATION LOGGING
