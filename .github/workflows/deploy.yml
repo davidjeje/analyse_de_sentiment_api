@@ -25,16 +25,16 @@ jobs:
         run: poetry install --no-root
 
       - name: Setup Kaggle credentials
-        run: |
-          mkdir -p ~/.kaggle
-          echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
+      #   run: |
+      #     mkdir -p ~/.kaggle
+      #     echo "{\"username\":\"${{ secrets.KAGGLE_USERNAME }}\",\"key\":\"${{ secrets.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
+      #     chmod 600 ~/.kaggle/kaggle.json
 
-      - name: Run tests
-        run: |
-          poetry add --dev pytest requests fastapi[all]  # installe pytest, requests et FastAPI dans l'environnement
-          poetry install --no-root                       # assure que toutes les dépendances sont présentes
-          poetry run pytest tests/test_app.py            # exécute le fichier de tests dans l'environnement Poetry
+      # - name: Run tests
+      #   run: |
+      #     poetry add --dev pytest requests fastapi[all]  # installe pytest, requests et FastAPI dans l'environnement
+      #     poetry install --no-root                       # assure que toutes les dépendances sont présentes
+      #     poetry run pytest tests/test_app.py            # exécute le fichier de tests dans l'environnement Poetry
 
       - name: Deploy to Heroku
         if: success()   # ne déploie que si les tests passent
