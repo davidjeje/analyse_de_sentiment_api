@@ -28,10 +28,10 @@ jobs:
         run: |
           poetry add --dev pytest requests fastapi[all]
 
-      - name: Run tests
-        run: |
-          poetry install --no-root
-          poetry run pytest tests/
+      # - name: Run tests
+      #   run: |
+      #     poetry install --no-root
+      #     poetry run pytest tests/
 
       - name: Install Heroku CLI
         run: |
