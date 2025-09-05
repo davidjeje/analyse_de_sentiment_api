@@ -16,14 +16,25 @@ from script.download_data import download_sentiment140_data
 # --------------------------
 # CONFIGURATION LOGGING
 # --------------------------
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
+
+# INSTRUMENTATION_KEY = os.getenv(
+#     "APPLICATIONINSIGHTS_CONNECTION_STRING",
+#     "dc668c66-e558-48aa-aedd-845404a47a18;IngestionEndpoint=https://canadacentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://canadacentral.livediagnostics.monitor.azure.com/;ApplicationId=7f4f2e23-49d7-4d86-82e9-f80804203f34"
+# )
+# logger.addHandler(AzureLogHandler(connection_string=f"InstrumentationKey={INSTRUMENTATION_KEY}"))
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-INSTRUMENTATION_KEY = os.getenv(
-    "APPLICATIONINSIGHTS_CONNECTION_STRING",
-    "dc668c66-e558-48aa-aedd-845404a47a18;IngestionEndpoint=https://canadacentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://canadacentral.livediagnostics.monitor.azure.com/;ApplicationId=7f4f2e23-49d7-4d86-82e9-f80804203f34"
+logger.addHandler(
+    AzureLogHandler(
+        connection_string=f"InstrumentationKey={os.getenv('APPINSIGHTS_KEY')}"
+    )
 )
-logger.addHandler(AzureLogHandler(connection_string=f"InstrumentationKey={INSTRUMENTATION_KEY}"))
+
+# --- Test que le logger fonctionne ---
+logger.info("🚀 Logger Application Insights configuré avec succès")
 
 # --------------------------
 # CHEMINS DES DONNÉES ET DU MODÈLE
