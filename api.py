@@ -164,6 +164,11 @@ def system_status():
     
     return status
 
+@app.get("/test-logs")
+def test_logs():
+    logger.info("📡 Test de log depuis Heroku")
+    return {"message": "Log envoyé à App Insights"}
+
 @app.get("/tweets", response_model=TweetsOut)
 def get_tweets(sample_frac: float = 0.5):
     if not os.path.exists(DATA_PATH):
