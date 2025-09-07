@@ -6,27 +6,54 @@ import pandas as pd
 import os
 from typing import List
 import logging
+from dotenv import load_dotenv
+load_dotenv()  # lit le fichier .env
+
 
 # Azure Application Insights
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 # Import du script de téléchargement des données Kaggle
 from script.download_data import download_sentiment140_data
+from opencensus.ext.azure.metrics_exporter import new_metrics_exporter
 
-# --------------------------
-# CONFIGURATION LOGGING
-# --------------------------
+# Logger classique
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-logger.addHandler(
-    AzureLogHandler(
-        connection_string=os.getenv('APPINSIGHTS_CONNECTION_STRING')
-    )
+if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
+    logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
+else:
+    logger.addHandler(logging.StreamHandler())  # fallback console
+
+logger.info("🚀 Logger Application Insights configuré avec succès")
+
+# Exporter métriques (gratuit)
+metric_exporter = new_metrics_exporter(
+    enable_standard_metrics=True,
+    connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")
 )
 
-# --- Test que le logger fonctionne ---
-logger.info("🚀 Logger Application Insights configuré avec succès")
+def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
+    """
+    Log Warning + incrémente un compteur métrique pour les tweets mal prédits.
+    """
+    # Log trace
+    logger.warning(
+        f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
+    )
+    # Incrémenter la métrique gratuite
+    metric_exporter.export_metric("tweets_mal_predits", 1)
+
+
+# def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
+#     """
+#     Envoie un log Warning à Application Insights quand un tweet est mal prédit.
+#     """
+#     logger.warning(
+#         f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
+#     )
+
 
 # --------------------------
 # CHEMINS DES DONNÉES ET DU MODÈLE
@@ -193,6 +220,22 @@ def predict_sentiment(tweet: TweetIn):
     confidence = 1.0  # optionnel, MLflow pyfunc ne renvoie pas toujours la probabilité
     sentiment = label_mapping.get(pred_label, "unknown")
     return PredictionOut(sentiment=sentiment, confidence=confidence)
+
+class FeedbackIn(BaseModel):
+    text: str
+    predicted: str
+    true_label: str
+
+@app.post("/feedback")
+def feedback(data: FeedbackIn):
+    """
+    Endpoint permettant à l'utilisateur de signaler une mauvaise prédiction.
+    """
+    if data.predicted != data.true_label:
+        log_misclassified_tweet(data.text, data.predicted, data.true_label)
+        return {"status": "logged", "message": "Tweet mal prédit enregistré"}
+    else:
+        return {"status": "ok", "message": "Prédiction correcte"}
 
 
 
