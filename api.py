@@ -232,10 +232,14 @@ def feedback(data: FeedbackIn):
     Endpoint permettant à l'utilisateur de signaler une mauvaise prédiction.
     """
     if data.predicted != data.true_label:
-        log_misclassified_tweet(data.text, data.predicted, data.true_label)
+        try:
+            log_misclassified_tweet(data.text, data.predicted, data.true_label)
+        except Exception as e:
+            return {"status": "error", "message": f"Erreur lors du logging: {e}"}
         return {"status": "logged", "message": "Tweet mal prédit enregistré"}
     else:
         return {"status": "ok", "message": "Prédiction correcte"}
+
 
 
 
