@@ -42,8 +42,8 @@ def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: s
     logger.warning(
         f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
     )
-    # Incrémenter la métrique gratuite
-    metric_exporter.export_metric("tweets_mal_predits", 1)
+    # Incrémenter la métrique via MLflow
+    mlflow.log_metric("tweets_mal_predits", 1)
 
 
 # def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
