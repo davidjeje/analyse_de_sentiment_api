@@ -49,7 +49,9 @@ if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
+    from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 
+    tracer_provider = TracerProvider(sampler=ALWAYS_ON)
     tracer_provider = TracerProvider(resource=Resource.create({"service.name": "sentiment-api"}))
     trace.set_tracer_provider(tracer_provider)
 
