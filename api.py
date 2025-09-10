@@ -41,27 +41,6 @@ logger.info("🚀 Logger Application Insights configuré avec succès")
 # --------------------------
 app = FastAPI(title="Analyse de sentiment API")
 
-# OpenTelemetry pour traces
-if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
-    from opentelemetry import trace
-    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
-    from opentelemetry.sdk.trace.sampling import ALWAYS_ON
-
-    tracer_provider = TracerProvider(sampler=ALWAYS_ON)
-    tracer_provider = TracerProvider(resource=Resource.create({"service.name": "sentiment-api"}))
-    trace.set_tracer_provider(tracer_provider)
-
-    trace_exporter = AzureMonitorTraceExporter.from_connection_string(
-        os.getenv("APPINSIGHTS_CONNECTION_STRING")
-    )
-    tracer_provider.add_span_processor(BatchSpanProcessor(trace_exporter))
-    FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider)
-    logger.info("📡 Instrumentation OpenTelemetry activée pour FastAPI")
-
 # --------------------------
 # CHEMINS DES DONNÉES ET DU MODÈLE
 # --------------------------
