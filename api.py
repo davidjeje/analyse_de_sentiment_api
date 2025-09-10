@@ -6,7 +6,8 @@ import pandas as pd
 import os
 from typing import List
 import logging
-
+from dotenv import load_dotenv
+load_dotenv()  # lit le fichier .env
 
 
 # Azure Application Insights
@@ -22,19 +23,16 @@ from opencensus.ext.azure.metrics_exporter import new_metrics_exporter
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
-# if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
-#     handler = AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING"))
-#     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-#     handler.setFormatter(formatter)
-#     logger.addHandler(handler)
-#     # logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
-# else:
-#     logger.addHandler(logging.StreamHandler())
-
+appinsights_connection_string = os.getenv("APPINSIGHTS_CONNECTION_STRING")
+if appinsights_connection_string:
+    handler = AzureLogHandler(connection_string=appinsights_connection_string)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+else:
+    logger.addHandler(logging.StreamHandler())  # fallback local / debug
 logger.info("🚀 Logger Application Insights configuré avec succès")
-from dotenv import load_dotenv
-load_dotenv()  # lit le fichier .env
+
 
 # --------------------------
 # FASTAPI APP
