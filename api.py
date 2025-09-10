@@ -6,8 +6,7 @@ import pandas as pd
 import os
 from typing import List
 import logging
-from dotenv import load_dotenv
-load_dotenv()  # lit le fichier .env
+
 
 
 # Azure Application Insights
@@ -34,6 +33,8 @@ logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNE
 #     logger.addHandler(logging.StreamHandler())
 
 logger.info("🚀 Logger Application Insights configuré avec succès")
+from dotenv import load_dotenv
+load_dotenv()  # lit le fichier .env
 
 # --------------------------
 # FASTAPI APP
