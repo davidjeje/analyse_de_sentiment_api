@@ -23,14 +23,15 @@ from opencensus.ext.azure.metrics_exporter import new_metrics_exporter
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
-    handler = AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING"))
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    # logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
-else:
-    logger.addHandler(logging.StreamHandler())
+logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
+# if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
+#     handler = AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING"))
+#     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+#     handler.setFormatter(formatter)
+#     logger.addHandler(handler)
+#     # logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
+# else:
+#     logger.addHandler(logging.StreamHandler())
 
 logger.info("🚀 Logger Application Insights configuré avec succès")
 
