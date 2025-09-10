@@ -18,19 +18,17 @@ from script.download_data import download_sentiment140_data
 from opencensus.ext.azure.metrics_exporter import new_metrics_exporter
 
 # --------------------------
-# Application Insights (logs + metrics + traces HTTP)
-# --------------------------
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-
-# --------------------------
 # LOGGER
 # --------------------------
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
-    logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
+    handler = AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING"))
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    # logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
 else:
     logger.addHandler(logging.StreamHandler())
 
@@ -149,7 +147,10 @@ def system_status():
 @app.get("/test-logs")
 def test_logs():
     logger.info("📡 Test de log depuis Heroku")
+    for h in logger.handlers:
+        h.flush()
     return {"message": "Log envoyé à App Insights"}
+
 
 @app.get("/tweets", response_model=TweetsOut)
 def get_tweets(sample_frac: float = 0.5):
