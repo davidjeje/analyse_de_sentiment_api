@@ -21,13 +21,6 @@ from opencensus.ext.azure.metrics_exporter import new_metrics_exporter
 # Application Insights (logs + metrics + traces HTTP)
 # --------------------------
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-from azure.monitor.opentelemetry.exporter import new_metrics_exporter
-
-# OpenTelemetry (pour requests)
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
 # --------------------------
 # LOGGER
@@ -36,26 +29,30 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")))
 else:
-    logger.addHandler(logging.StreamHandler())  # fallback console
+    logger.addHandler(logging.StreamHandler())
 
 logger.info("🚀 Logger Application Insights configuré avec succès")
-
-# Export métriques standard
-metric_exporter = new_metrics_exporter(
-    enable_standard_metrics=True,
-    connection_string=os.getenv("APPINSIGHTS_CONNECTION_STRING")
-)
 
 # --------------------------
 # FASTAPI APP
 # --------------------------
-app = FastAPI()
+app = FastAPI(title="Analyse de sentiment API")
 
-# Instrumentation OpenTelemetry pour capturer automatiquement les requêtes HTTP
+# OpenTelemetry pour traces
 if os.getenv("APPINSIGHTS_CONNECTION_STRING"):
-    tracer_provider = TracerProvider()
+    from opentelemetry import trace
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
+
+    tracer_provider = TracerProvider(resource=Resource.create({"service.name": "sentiment-api"}))
+    trace.set_tracer_provider(tracer_provider)
+
     trace_exporter = AzureMonitorTraceExporter.from_connection_string(
         os.getenv("APPINSIGHTS_CONNECTION_STRING")
     )
@@ -74,18 +71,19 @@ DATA_PATH = os.path.join("data", "training.1600000.processed.noemoticon.csv")
 # LOGGING SPÉCIFIQUE
 # --------------------------
 def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
-    """
-    Log Warning + incrémente un compteur métrique pour les tweets mal prédits.
-    """
     logger.warning(
         f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
     )
-    mlflow.log_metric("tweets_mal_predits", 1)
+    try:
+        mlflow.log_metric("tweets_mal_predits", 1)
+    except Exception:
+        pass
 
 # --------------------------
-# TÉLÉCHARGEMENT AUTOMATIQUE
+# TÉLÉCHARGEMENT AUTOMATIQUE DU MODÈLE
 # --------------------------
 if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR, exist_ok=True)
     try:
         logger.info("Téléchargement du modèle MLflow en cours...")
         mlflow.artifacts.download_artifacts(
@@ -97,16 +95,6 @@ if not os.path.exists(MODEL_DIR):
         logger.error(f"❌ Erreur lors du téléchargement du modèle: {e}")
         raise
 
-if not os.path.exists(DATA_PATH):
-    try:
-        logger.info("Téléchargement des données Sentiment140 depuis Kaggle...")
-        # à adapter si tu as une fonction utilitaire
-        # download_sentiment140_data()
-        logger.info("✅ Données téléchargées avec succès")
-    except Exception as e:
-        logger.error(f"❌ Erreur lors du téléchargement des données: {e}")
-        raise
-
 # --------------------------
 # CHARGEMENT DU MODÈLE
 # --------------------------
@@ -116,19 +104,6 @@ try:
 except Exception as e:
     logger.error(f"❌ Erreur lors du chargement du modèle: {e}")
     raise
-
-# --------------------------
-# VÉRIFICATION DES DONNÉES
-# --------------------------
-def check_data_availability():
-    if not os.path.exists(DATA_PATH):
-        logger.warning(f"❌ Fichier de données non trouvé : {DATA_PATH}")
-        return False
-    logger.info(f"✅ Fichier de données trouvé : {DATA_PATH}")
-    return True
-
-if not check_data_availability():
-    logger.warning("⚠️  API démarrée sans données - certains endpoints ne fonctionneront pas")
 
 # --------------------------
 # SCHÉMAS Pydantic
@@ -225,3 +200,12 @@ def feedback(data: FeedbackIn):
         return {"status": "logged", "message": "Tweet mal prédit enregistré"}
     else:
         return {"status": "ok", "message": "Prédiction correcte"}
+
+# --------------------------
+# POINT D'ENTRÉE HEROKU
+# --------------------------
+# if __name__ == "__main__":
+#     import uvicorn
+#     port = int(os.environ.get("PORT", 8000))
+#     uvicorn.run(app, host="0.0.0.0", port=port)
+
