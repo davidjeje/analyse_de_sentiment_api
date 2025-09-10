@@ -55,3 +55,4 @@ api/
 ```bash
 poetry install
 poetry run uvicorn api:app --reload
+poetry run streamlit run app_streamlit.py
