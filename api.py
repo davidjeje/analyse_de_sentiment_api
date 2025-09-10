@@ -146,10 +146,10 @@ def system_status():
 
 @app.get("/test-logs")
 def test_logs():
-    logger.info("📡 Test de log depuis Heroku")
+    logger.warning("⚠️ Test log WARNING pour App Insights")
     for h in logger.handlers:
         h.flush()
-    return {"message": "Log envoyé à App Insights"}
+    return {"message": "Log WARNING envoyé à App Insights"}
 
 
 @app.get("/tweets", response_model=TweetsOut)
