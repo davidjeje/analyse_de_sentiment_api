@@ -20,8 +20,9 @@ from opencensus.ext.azure.metrics_exporter import new_metrics_exporter
 # --------------------------
 # LOGGER
 # --------------------------
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("analyse_sentiment_api")
 logger.setLevel(logging.INFO)
+logger.propagate = False  # éviter double envoi vers stdout
 
 appinsights_connection_string = os.getenv("APPINSIGHTS_CONNECTION_STRING")
 if appinsights_connection_string:
@@ -31,6 +32,7 @@ if appinsights_connection_string:
     logger.addHandler(handler)
 else:
     logger.addHandler(logging.StreamHandler())  # fallback local / debug
+
 logger.info("🚀 Logger Application Insights configuré avec succès")
 
 
@@ -49,14 +51,27 @@ DATA_PATH = os.path.join("data", "training.1600000.processed.noemoticon.csv")
 # --------------------------
 # LOGGING SPÉCIFIQUE
 # --------------------------
+# def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
+#     logger.warning(
+#         f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
+#     )
+#     try:
+#         mlflow.log_metric("tweets_mal_predits", 1)
+#     except Exception:
+#         pass
+
 def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
-    logger.warning(
-        f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
-    )
-    try:
-        mlflow.log_metric("tweets_mal_predits", 1)
-    except Exception:
-        pass
+    logger.warning("Tweet mal prédit", extra={
+        "custom_dimensions": {
+            "tweet_text": tweet_text,
+            "predicted": predicted_label,
+            "true_label": true_label
+        }
+    })
+
+    for h in logger.handlers:
+        if hasattr(h, "flush"):
+            h.flush()
 
 # --------------------------
 # TÉLÉCHARGEMENT AUTOMATIQUE DU MODÈLE
@@ -147,8 +162,6 @@ def system_status():
 @app.get("/test-logs")
 def test_logs():
     logger.warning("⚠️ Test log WARNING pour App Insights")
-    for h in logger.handlers:
-        h.flush()
     return {"message": "Log WARNING envoyé à App Insights"}
 
 
@@ -182,6 +195,16 @@ def feedback(data: FeedbackIn):
         return {"status": "logged", "message": "Tweet mal prédit enregistré"}
     else:
         return {"status": "ok", "message": "Prédiction correcte"}
+    
+    # def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
+    # logger.warning("Tweet mal prédit", extra={
+    #     "custom_dimensions": {
+    #         "tweet_text": tweet_text,
+    #         "predicted": predicted_label,
+    #         "true_label": true_label
+    #     }
+    # })
+
 
 # --------------------------
 # POINT D'ENTRÉE HEROKU
