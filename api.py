@@ -60,18 +60,26 @@ DATA_PATH = os.path.join("data", "training.1600000.processed.noemoticon.csv")
 #     except Exception:
 #         pass
 
-def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
-    logger.warning("Tweet mal prédit", extra={
-        "custom_dimensions": {
-            "tweet_text": tweet_text,
-            "predicted": predicted_label,
-            "true_label": true_label
-        }
-    })
+# def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
+#     logger.warning("Tweet mal prédit", extra={
+#         "custom_dimensions": {
+#             "tweet_text": tweet_text,
+#             "predicted": predicted_label,
+#             "true_label": true_label
+#         }
+#     })
 
+#     for h in logger.handlers:
+#         if hasattr(h, "flush"):
+#             h.flush()
+
+def log_misclassified_tweet(tweet_text: str, predicted_label: str, true_label: str):
+    log_msg = f"Tweet mal prédit ! Texte='{tweet_text}' | Prédiction='{predicted_label}' | Vérité='{true_label}'"
+    logger.warning(log_msg)  # message complet
     for h in logger.handlers:
         if hasattr(h, "flush"):
             h.flush()
+
 
 # --------------------------
 # TÉLÉCHARGEMENT AUTOMATIQUE DU MODÈLE
